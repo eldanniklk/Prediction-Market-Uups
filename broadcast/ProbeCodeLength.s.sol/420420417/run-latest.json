@@ -1,0 +1,36 @@
+{
+  "transactions": [
+    {
+      "hash": "0x207c295484163631ed36aed578e345ba0be342bff2eaf21001e572438c162ab6",
+      "transactionType": "CREATE",
+      "contractName": "CodeLengthProbe",
+      "contractAddress": "0x292e4567a99004a984500036f99a6fd9000fa89d",
+      "function": null,
+      "arguments": [
+        "0xf60797801399a5127D0b3A39cDd68F4cF5488bC0"
+      ],
+      "transaction": {
+        "from": "0x2e40802f7a13fd8545d4cb7d8d4d75b0fca053d4",
+        "gas": "0x17095",
+        "value": "0x0",
+        "input": "0x6080604052348015600f57600080fd5b5060405160f038038060f0833981016040819052602a916076565b6000816001600160a01b03163b1160715760405162461bcd60e51b81526020600482015260076024820152664e4f5f434f444560c81b604482015260640160405180910390fd5b5060a4565b600060208284031215608757600080fd5b81516001600160a01b0381168114609d57600080fd5b9392505050565b603f8060b16000396000f3fe6080604052600080fdfea2646970667358221220c266e75fec4e21a65d6b50bd34fee18b6a6de9b03f601df4c0fc5f866621c87064736f6c634300081c0033000000000000000000000000f60797801399a5127d0b3a39cdd68f4cf5488bc0",
+        "nonce": "0x13",
+        "chainId": "0x190f1b41"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {
+    "deployed": {
+      "internal_type": "address",
+      "value": "0x292e4567A99004A984500036f99a6FD9000fA89D"
+    }
+  },
+  "timestamp": 1771667338705,
+  "chain": 420420417,
+  "commit": null
+}

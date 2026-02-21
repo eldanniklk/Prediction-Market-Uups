@@ -1,0 +1,25 @@
+# Compiler files
+cache/
+out/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+*.env
+eo.env
+round_state.json
+ops/**/round_state.json
+node_modules
+.env
+*.env
+eo.env
+.env
+*.env
+eo.env

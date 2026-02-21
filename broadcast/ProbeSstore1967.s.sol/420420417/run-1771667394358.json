@@ -1,0 +1,36 @@
+{
+  "transactions": [
+    {
+      "hash": "0x05582e83d4b8dd3228492c31453ad23ab3f04036133ab3633479fcf54a6cdd1c",
+      "transactionType": "CREATE",
+      "contractName": "Sstore1967Probe",
+      "contractAddress": "0xc3d72654be63769455988b08f92197c584fd0514",
+      "function": null,
+      "arguments": [
+        "0xf60797801399a5127D0b3A39cDd68F4cF5488bC0"
+      ],
+      "transaction": {
+        "from": "0x2e40802f7a13fd8545d4cb7d8d4d75b0fca053d4",
+        "gas": "0x1d061",
+        "value": "0x0",
+        "input": "0x6080604052348015600f57600080fd5b5060405160ca38038060ca833981016040819052602a916050565b7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc55607e565b600060208284031215606157600080fd5b81516001600160a01b0381168114607757600080fd5b9392505050565b603f80608b6000396000f3fe6080604052600080fdfea264697066735822122052fb1093106a777788b492eecb1d871ea589ff1e71ab6fc77673151fd9d7e9fc64736f6c634300081c0033000000000000000000000000f60797801399a5127d0b3a39cdd68f4cf5488bc0",
+        "nonce": "0x14",
+        "chainId": "0x190f1b41"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {
+    "deployed": {
+      "internal_type": "address",
+      "value": "0xC3D72654bE63769455988b08f92197c584FD0514"
+    }
+  },
+  "timestamp": 1771667394358,
+  "chain": 420420417,
+  "commit": null
+}
