@@ -20,9 +20,9 @@ This repo is prepared for the **next phase**:
 
 Already implemented and tested:
 
-- Main UUPS contract: `src/PredictionMarketUpgradeable.sol`
-- V2 contract for upgrade testing: `src/PredictionMarketUpgradeableV2.sol`
-- Foundry deploy/upgrade scripts
+- Main UUPS contract: `src/PredictionMarket.sol`
+- Upgrade test implementation mock lives inside `test/PredictionMarket.t.sol`
+- Foundry deploy scripts
 - Solidity E2E tests (Foundry)
 
 Functional model:
@@ -62,9 +62,18 @@ Recommended flow:
 
 ## 4. Build and tests
 
+Cómo compilar y testear los contratos:
+
+Compile all contracts:
+
 ```bash
 forge clean
 forge build
+```
+
+Run all tests:
+
+```bash
 forge test -vv
 ```
 ## 5. Roadmap (next steps)
