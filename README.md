@@ -36,7 +36,7 @@ Functional model:
 
 ---
 
-## 3. Operational flow
+## 2. Operational flow
 
 Recommended flow:
 
@@ -52,7 +52,7 @@ Recommended flow:
 
 ---
 
-## 5. Requirements
+## 3. Requirements
 
 - Foundry (`forge`, `cast`)
 - Paseo RPC: `https://eth-rpc-testnet.polkadot.io/`
@@ -60,21 +60,21 @@ Recommended flow:
 
 ---
 
-## 7. Build and tests
+## 4. Build and tests
 
 ```bash
 forge clean
 forge build
 forge test -vv
-
-## 11. Roadmap (next steps)
+```
+## 5. Roadmap (next steps)
 
 - **Web (UI):** deposit/withdraw, sign EIP-712 orders, view orderbook/position, claim.
 - **Price bot:** publish prices, open epochs, resolve epochs automatically.
 
 ---
 
-## 12. Security and operations
+## 6. Security and operations
 
 Recommendations for a more production-like phase:
 
