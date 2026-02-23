@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Script, console2} from "forge-std/Script.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import {PredictionMarketUpgradeable} from "../src/PredictionMarketUpgradeable.sol";
+import {PredictionMarket} from "../src/PredictionMarket.sol";
 
 contract DeployScript is Script {
     function run() external returns (address proxyAddr, address implementationAddr) {
@@ -14,10 +14,10 @@ contract DeployScript is Script {
 
         vm.startBroadcast(deployerPk);
 
-        PredictionMarketUpgradeable implementation = new PredictionMarketUpgradeable();
-        bytes memory initData = abi.encodeCall(PredictionMarketUpgradeable.initialize, (initialOwner, initialMatcher));
+        PredictionMarket implementation = new PredictionMarket();
+        bytes memory initData = abi.encodeCall(PredictionMarket.initialize, (initialOwner, initialMatcher));
         ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
-        PredictionMarketUpgradeable market = PredictionMarketUpgradeable(payable(address(proxy)));
+        PredictionMarket market = PredictionMarket(payable(address(proxy)));
 
         if (treasuryAddr != initialOwner) {
             market.setTreasury(treasuryAddr);
