@@ -1,249 +1,99 @@
 # PredictionMarket UUPS (Foundry)
 
-Prediction market diario UP/DOWN para BTC, ETH y DOT, con:
-- colateral nativo en Paseo (`msg.value`, token PAS)
-- orderbook EIP-712 (sin AMM)
-- ejecución vía matcher
-- contrato upgradeable UUPS
+**A “Polymarket-style” prediction market isn’t a sportsbook: it’s a mechanism to discover real probabilities, without dominant intermediaries.**  
+👉 For the full vision (what problem it solves and why Polkadot can do it better): **[docs/VISION.md](docs/VISION.md)**
 
-Este repo está preparado para la siguiente fase: integrar una web (UI + firma de órdenes) y un bot/oracle runner que publique precios en tiempo real para resolver epochs.
+Daily **UP/DOWN** prediction market for **BTC, ETH, and DOT** on **Paseo (EVM)**, featuring:
 
-## 1. Estado actual
+- **Native collateral** on Paseo (`msg.value`, **PAS** token)
+- **Off-chain orderbook** with **EIP-712** signatures (no AMM)
+- **Matcher-based execution** (a relayer/service that fills orders)
+- **Upgradeable** contract using the **UUPS** pattern
 
-Ya implementado y probado:
-- contrato principal UUPS: `src/PredictionMarketUpgradeable.sol`
-- contrato V2 para upgrade test: `src/PredictionMarketUpgradeableV2.sol`
-- scripts Foundry de deploy/upgrade
-- tests E2E en Solidity (Foundry)
+This repo is prepared for the **next phase**:
+- Integrate a **web UI** (UI + EIP-712 order signing)
+- Add a **bot/oracle runner** that publishes real-time prices to open and resolve **epochs**
 
-Modelo funcional:
-- mercados diarios por asset (`EPOCH_DURATION = 1 day`)
-- outcomes por epoch: `UP` / `DOWN`
-- precio de share en `priceBps` (válido `1..9999`)
-- payout final: share ganadora = `1:1`, perdedora = `0`
-- usuarios no mintean shares
-- `mint` y `merge` solo `owner` o `treasury`, sobre balance de `treasury`
+---
 
-## 2. Arquitectura (hoy)
+## 1. Current status
 
-Componentes on-chain:
-- `PredictionMarketUpgradeable` (proxy logic)
-  - depósitos/retiros nativos
-  - epochs diarios y resolución
-  - matching de órdenes EIP-712
-  - claim 1:1
-  - administración (`owner`, `matcher`, `treasury`, pausa)
-- `ERC1967Proxy` (UUPS)
-- `PredictionMarketUpgradeableV2` (upgrade target de ejemplo)
+Already implemented and tested:
 
-```text
-Users/Bot/Matcher/UI
-        |
-        v
-+------------------+   delegatecall   +------------------------------+
-|   ERC1967Proxy   | ---------------> | PredictionMarketUpgradeable   |
-| (state lives)    |                  | (UUPS implementation)         |
-+------------------+                  +------------------------------+
-        |
-        v upgradeTo(newImpl) [onlyOwner]
-+------------------------------+
-| PredictionMarket...V2/V3...  |
-+------------------------------+
-```
+- Main UUPS contract: `src/PredictionMarketUpgradeable.sol`
+- V2 contract for upgrade testing: `src/PredictionMarketUpgradeableV2.sol`
+- Foundry deploy/upgrade scripts
+- Solidity E2E tests (Foundry)
 
-Actores:
-- `owner`: administra matcher, treasury, prices y upgrades
-- `treasury`: crea inventario inicial de shares (`mint`/`merge`)
-- `matcher`: ejecuta `matchOrdersPolymarketStyle`
-- `user`: deposita PAS, firma órdenes, hace claim y retira
+Functional model:
 
-## 3. Flujo operativo
+- **Daily** markets per asset (`EPOCH_DURATION = 1 day`)
+- Outcomes per epoch: **UP / DOWN**
+- Share price in `priceBps` (valid `1..9999`)
+- Final payout: winning share = **1:1**, losing share = **0**
+- Users **do not mint** shares
+- `mint` and `merge` are restricted to **owner** or **treasury**, using treasury balance
 
-1. Owner publica precios (`pushPrice`) y abre epochs con `bootstrapDailyEpochs`.
-2. Treasury deposita PAS y crea inventario (`mint`) para ofrecer liquidez.
-3. Usuario deposita PAS (`depositCollateral`).
-4. Usuario/treasury firman órdenes EIP-712 off-chain.
-5. Matcher ejecuta `matchOrdersPolymarketStyle`.
-6. Al cierre, owner resuelve epoch (`resolveEpoch` / `rollDaily`).
-7. Usuario cobra con `claim` y puede retirar con `withdrawCollateral`.
+---
 
-## 4. Estructura del repo
+## 3. Operational flow
 
-- `src/PredictionMarketUpgradeable.sol`
-- `src/PredictionMarketUpgradeableV2.sol`
-- `test/PredictionMarket.t.sol`
-- `script/DeployProxy.s.sol` (recomendado para Paseo)
-- `script/UpgradeToV2.s.sol`
+Recommended flow:
 
-Scripts legacy/alternativos en `script/` pueden seguir existiendo, pero el flujo recomendado es `DeployProxy` + `UpgradeToV2`.
+1. **Owner/oracle** pushes prices (`pushPrice`) and opens epochs with `bootstrapDailyEpochs`.
+2. **Treasury** deposits PAS and creates inventory (`mint`) to provide liquidity.
+3. The **user** deposits PAS (`depositCollateral`).
+4. User/treasury sign **EIP-712** orders off-chain.
+5. The **matcher** executes `matchOrdersPolymarketStyle`.
+6. At day close, the owner resolves the epoch (`resolveEpoch` / `rollDaily`).
+7. Users get paid via `claim` and can withdraw via `withdrawCollateral`.
 
-## 5. Requisitos
+> Note: this follows a “Polymarket-style” approach: the orderbook lives off-chain, while the chain validates signatures and updates balances.
+
+---
+
+## 5. Requirements
 
 - Foundry (`forge`, `cast`)
-- RPC Paseo: `https://eth-rpc-testnet.polkadot.io/`
-- cuenta con saldo PAS para deploy/upgrade
+- Paseo RPC: `https://eth-rpc-testnet.polkadot.io/`
+- An account with enough **PAS** for deploy/operation
 
-## 6. Variables de entorno
+---
 
-Ejemplo mínimo (`.env`):
-
-```bash
-RPC_URL=https://eth-rpc-testnet.polkadot.io/
-CHAIN_ID=420420417
-PRIVATE_KEY=<hex_sin_0x>
-OWNER=0x...
-MATCHER=0x...
-PROXY=0x...   # para upgrade
-```
-
-Puedes partir de `.env.example`:
-
-```bash
-cp .env.example .env
-```
-
-Notas:
-- `OWNER` y `MATCHER` deben ser explícitos.
-- `OWNER` queda como owner inicial y treasury inicial.
-- no commitear `.env` ni claves privadas al repo.
-
-## 7. Build y tests
+## 7. Build and tests
 
 ```bash
 forge clean
 forge build
 forge test -vv
-```
 
-## 8. Deploy en Paseo (UUPS proxy)
+## 11. Roadmap (next steps)
 
-Comando recomendado (Paseo):
+- **Web (UI):** deposit/withdraw, sign EIP-712 orders, view orderbook/position, claim.
+- **Price bot:** publish prices, open epochs, resolve epochs automatically.
 
-```bash
-forge script script/DeployProxy.s.sol:DeployProxy -vvvv \
-  --rpc-url $RPC_URL \
-  --broadcast \
-  --legacy \
-  --gas-estimate-multiplier 1000
-```
+---
 
-La bandera `--gas-estimate-multiplier 1000` evita fallos de estimación observados en este RPC durante CREATE/CREATE2 de contratos proxy.
+## 12. Security and operations
 
-Verificación posterior:
+Recommendations for a more production-like phase:
 
-```bash
-cast code <PROXY> --rpc-url $RPC_URL
-cast call <PROXY> "owner()(address)" --rpc-url $RPC_URL
-cast call <PROXY> "treasury()(address)" --rpc-url $RPC_URL
-cast call <PROXY> "matcherAddress()(address)" --rpc-url $RPC_URL
-```
+- Keep `owner` and `treasury` behind a multisig for production
+- Restrict and monitor `matcherAddress`
+- Use separate keys for deploy/admin/oracle bot
+- Record and audit UUPS upgrades
+- Never expose keys in logs, CI, or `.env` files
 
-Debe cumplirse:
-- `cast code` != `0x`
-- `owner == OWNER`
-- `treasury == OWNER` (inicialmente)
-- `matcherAddress == MATCHER`
+### MEV / “sandwich” (quick view)
 
-## 9. Upgrade UUPS a V2
+- There is no AMM, so the classic “sandwich” (moving the pool price) doesn’t apply in the same way.
+- However, you can still have:
+  - **Execution sniping** (executing an order at a bad time if it has no protections)
+  - **Last-block positioning** (entering right before epoch close)
+  - **Feeder/oracle risk** (trust model)
 
-```bash
-forge script script/UpgradeToV2.s.sol:UpgradeToV2 -vvvv \
-  --rpc-url $RPC_URL \
-  --broadcast \
-  --legacy \
-  --gas-estimate-multiplier 1000
-```
+### Typical mitigations (future work)
 
-Verificar:
-
-```bash
-cast call <PROXY> "version()(string)" --rpc-url $RPC_URL
-```
-
-Esperado:
-- `"v2"`
-
-## 10. Quickstart: Market live (manual)
-
-Flujo mínimo para levantar un mercado manualmente (asset BTC = `0`):
-
-```bash
-# 1) pushPrice(uint8,uint80,int192,uint256)
-TS=$(cast block latest --rpc-url $RPC_URL --field timestamp)
-cast send $PROXY "pushPrice(uint8,uint80,int192,uint256)" 0 1 5000000 $TS --rpc-url $RPC_URL --private-key $PRIVATE_KEY
-
-# 2) bootstrapDailyEpochs()
-cast send $PROXY "bootstrapDailyEpochs()" --rpc-url $RPC_URL --private-key $PRIVATE_KEY
-
-# 3) depositCollateral() con una cuenta de usuario
-cast send $PROXY "depositCollateral()" --value 0.01ether --rpc-url $RPC_URL --private-key $USER_PRIVATE_KEY
-
-# 4) leer estado básico
-USER=$(cast wallet address --private-key $USER_PRIVATE_KEY)
-cast call $PROXY "getFreeCollateral(address)(uint256)" $USER --rpc-url $RPC_URL
-cast call $PROXY "getCurrentEpoch(uint8)(uint256,(uint64,uint64,uint80,uint80,int192,int192,bool,uint8))" 0 --rpc-url $RPC_URL
-```
-
-## 11. Roadmap: web + bot de precios
-
-### Fase Web (frontend)
-
-Objetivo:
-- UI para depositar/retirar
-- firma de órdenes EIP-712 (BUY/SELL)
-- visualización de orderbook y posición del usuario
-- claim al resolver epoch
-
-Checklist técnico:
-- ABIs del proxy + dirección por red
-- signer wallet (EIP-712 typed data)
-- backend ligero o matcher service para discovery de órdenes
-- manejo de nonces/cancelaciones (`cancelNonce`, `cancelAllUpTo`)
-
-### Fase Bot (oracle / automation)
-
-Objetivo:
-- publicar precios con `pushPrice`
-- ejecutar `bootstrapDailyEpochs` al iniciar el día
-- resolver/rodar epochs con `resolveEpoch` / `rollDaily`
-
-Recomendación de diseño:
-- proceso daemon con scheduler UTC
-- source de precios redundante (2+ proveedores)
-- política de tolerancia y validación previa
-- alertas (Discord/Telegram/Slack) para fallos
-- runbook de emergencia (pausa, retry, rollback operativo)
-
-## 12. Seguridad y operación
-
-- mantener `owner` y `treasury` en multisig al pasar a producción
-- restringir y monitorear `matcherAddress`
-- usar claves separadas para deploy/admin/oracle bot
-- registrar y auditar upgrades UUPS
-- no exponer `PRIVATE_KEY` en logs ni CI
-
-## 13. Problemas conocidos en Paseo (importante)
-
-- El RPC puede subestimar gas en despliegues de proxy.
-- Síntoma: tx de CREATE con `status=0`, `gasUsed` muy bajo, proxy sin código.
-- Mitigación efectiva en este repo:
-  - `--legacy`
-  - `--gas-estimate-multiplier 1000`
-
-## 14. Comandos rápidos
-
-Deploy + verificación:
-
-```bash
-forge script script/DeployProxy.s.sol:DeployProxy -vvvv --rpc-url $RPC_URL --broadcast --legacy --gas-estimate-multiplier 1000
-cast call $PROXY "owner()(address)" --rpc-url $RPC_URL
-cast call $PROXY "treasury()(address)" --rpc-url $RPC_URL
-cast call $PROXY "matcherAddress()(address)" --rpc-url $RPC_URL
-```
-
-Upgrade + check:
-
-```bash
-forge script script/UpgradeToV2.s.sol:UpgradeToV2 -vvvv --rpc-url $RPC_URL --broadcast --legacy --gas-estimate-multiplier 1000
-cast call $PROXY "version()(string)" --rpc-url $RPC_URL
-```
+- Add `deadline` to EIP-712 orders
+- Add bounds like `minFill` / `maxPriceBps`
+- Cutoff window: disallow opening positions in the last **N seconds** of an epoch
