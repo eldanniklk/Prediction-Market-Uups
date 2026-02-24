@@ -10,7 +10,7 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Pau
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title PredictionMarket
-/// @author Daniel Sanchez 
+/// @author Daniel Sanchez
 /// @notice UUPS-upgradeable binary prediction market for BTC, ETH, and DOT price movements.
 /// @dev Implements a daily-epoch binary options system where traders bet on whether an asset's
 /// price will go UP or DOWN within a 24-hour UTC-aligned window. The contract uses an
@@ -343,7 +343,9 @@ contract PredictionMarket is
     /// @param endTs The epoch end timestamp (exclusive).
     /// @param startPrice The oracle price at epoch creation.
     /// @param roundId The oracle round ID at epoch creation.
-    event EpochCreated(Asset indexed asset, uint256 indexed epochId, uint64 startTs, uint64 endTs, int192 startPrice, uint80 roundId);
+    event EpochCreated(
+        Asset indexed asset, uint256 indexed epochId, uint64 startTs, uint64 endTs, int192 startPrice, uint80 roundId
+    );
 
     /// @notice Emitted when an epoch is resolved with a winning outcome.
     /// @param asset The asset whose epoch was resolved.
@@ -351,7 +353,9 @@ contract PredictionMarket is
     /// @param winningOutcome The determined winning outcome (UP or DOWN).
     /// @param finalPrice The oracle price used for resolution.
     /// @param roundId The oracle round ID used for resolution.
-    event EpochResolved(Asset indexed asset, uint256 indexed epochId, Outcome winningOutcome, int192 finalPrice, uint80 roundId);
+    event EpochResolved(
+        Asset indexed asset, uint256 indexed epochId, Outcome winningOutcome, int192 finalPrice, uint80 roundId
+    );
 
     /// @notice Emitted when the matcher address is updated.
     /// @param matcher The new matcher address.
@@ -681,7 +685,12 @@ contract PredictionMarket is
     /// @param asset The asset market to mint shares for.
     /// @param epochId The epoch to mint shares in (must be active and unresolved).
     /// @param amount The number of share pairs to mint, also the collateral amount to lock (in wei).
-    function mint(Asset asset, uint256 epochId, uint256 amount) external onlyOwnerOrTreasury nonReentrant whenNotPaused {
+    function mint(Asset asset, uint256 epochId, uint256 amount)
+        external
+        onlyOwnerOrTreasury
+        nonReentrant
+        whenNotPaused
+    {
         _mint(asset, epochId, amount);
     }
 
@@ -692,7 +701,12 @@ contract PredictionMarket is
     /// @param asset The asset market to merge shares from.
     /// @param epochId The epoch to merge shares in (must exist and not be resolved).
     /// @param shares The number of share pairs to merge/burn.
-    function merge(Asset asset, uint256 epochId, uint256 shares) external onlyOwnerOrTreasury nonReentrant whenNotPaused {
+    function merge(Asset asset, uint256 epochId, uint256 shares)
+        external
+        onlyOwnerOrTreasury
+        nonReentrant
+        whenNotPaused
+    {
         _validateAsset(asset);
         if (shares == 0) revert InvalidAmount();
 
@@ -773,7 +787,9 @@ contract PredictionMarket is
         uint128 takerFillShares,
         uint128[] calldata makerFillShares
     ) external nonReentrant whenNotPaused onlyMatcherOrOwner {
-        if (makers.length != makerFillShares.length) revert FillArrayLengthMismatch();
+        if (makers.length != makerFillShares.length) {
+            revert FillArrayLengthMismatch();
+        }
         if (takerFillShares == 0) revert InvalidAmount();
 
         Order calldata takerOrder = taker.order;
@@ -922,7 +938,11 @@ contract PredictionMarket is
     /// @param epochId The epoch to query.
     /// @return up The number of UP outcome shares held.
     /// @return down The number of DOWN outcome shares held.
-    function getUserShares(address user, Asset asset, uint256 epochId) external view returns (uint256 up, uint256 down) {
+    function getUserShares(address user, Asset asset, uint256 epochId)
+        external
+        view
+        returns (uint256 up, uint256 down)
+    {
         _validateAsset(asset);
         up = outcomeShares[user][asset][epochId][Outcome.UP];
         down = outcomeShares[user][asset][epochId][Outcome.DOWN];
@@ -989,7 +1009,9 @@ contract PredictionMarket is
     /// @param startTs The epoch start timestamp (UTC day boundary).
     /// @param startRoundId The oracle round ID at epoch creation.
     /// @param startPrice The oracle price at epoch creation.
-    function _createEpoch(Asset asset, uint256 epochId, uint64 startTs, uint80 startRoundId, int192 startPrice) internal {
+    function _createEpoch(Asset asset, uint256 epochId, uint64 startTs, uint80 startRoundId, int192 startPrice)
+        internal
+    {
         uint64 duration = _toUint64(EPOCH_DURATION);
         if (startTs > type(uint64).max - duration) revert TimestampOverflow();
         uint64 endTs = startTs + duration;
@@ -1047,7 +1069,9 @@ contract PredictionMarket is
 
         uint256 notional = _notional(fillShares, sell.priceBps);
         if (freeCollateral[buy.trader] < notional) revert InsufficientCollateral();
-        if (outcomeShares[sell.trader][sell.asset][sell.epochId][sell.outcome] < fillShares) revert InsufficientShares();
+        if (outcomeShares[sell.trader][sell.asset][sell.epochId][sell.outcome] < fillShares) {
+            revert InsufficientShares();
+        }
 
         freeCollateral[buy.trader] -= notional;
         freeCollateral[sell.trader] += notional;

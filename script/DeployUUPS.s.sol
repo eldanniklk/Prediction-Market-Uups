@@ -15,8 +15,7 @@ contract DeployUUPS is Script {
         vm.startBroadcast(privateKey);
 
         PredictionMarket impl = new PredictionMarket();
-        bytes memory data =
-            abi.encodeWithSelector(PredictionMarket.initialize.selector, owner, matcher);
+        bytes memory data = abi.encodeWithSelector(PredictionMarket.initialize.selector, owner, matcher);
         ERC1967Proxy proxy = new ERC1967Proxy(address(impl), data);
 
         vm.stopBroadcast();

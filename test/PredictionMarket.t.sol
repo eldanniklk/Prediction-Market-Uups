@@ -123,16 +123,12 @@ contract PredictionMarketTest is Test {
             salt: bytes32(uint256(222))
         });
 
-        PredictionMarket.SignedOrder memory taker = PredictionMarket.SignedOrder({
-            order: userBuy,
-            signature: _signOrder(USER_PK, userBuy)
-        });
+        PredictionMarket.SignedOrder memory taker =
+            PredictionMarket.SignedOrder({order: userBuy, signature: _signOrder(USER_PK, userBuy)});
 
         PredictionMarket.SignedOrder[] memory makers = new PredictionMarket.SignedOrder[](1);
-        makers[0] = PredictionMarket.SignedOrder({
-            order: treasurySell,
-            signature: _signOrder(TREASURY_PK, treasurySell)
-        });
+        makers[0] =
+            PredictionMarket.SignedOrder({order: treasurySell, signature: _signOrder(TREASURY_PK, treasurySell)});
 
         uint128[] memory makerFills = new uint128[](1);
         makerFills[0] = uint128(1 ether);
@@ -145,13 +141,9 @@ contract PredictionMarketTest is Test {
         assertEq(market.freeCollateral(userAddr), 5 ether - notional);
         assertEq(market.freeCollateral(treasuryAddr), 7 ether + notional);
         assertEq(
-            market.outcomeShares(treasuryAddr, PredictionMarket.Asset.BTC, 1, PredictionMarket.Outcome.UP),
-            2 ether
+            market.outcomeShares(treasuryAddr, PredictionMarket.Asset.BTC, 1, PredictionMarket.Outcome.UP), 2 ether
         );
-        assertEq(
-            market.outcomeShares(userAddr, PredictionMarket.Asset.BTC, 1, PredictionMarket.Outcome.UP),
-            1 ether
-        );
+        assertEq(market.outcomeShares(userAddr, PredictionMarket.Asset.BTC, 1, PredictionMarket.Outcome.UP), 1 ether);
     }
 
     function testResolveAndClaimPaysOneToOne() public {
@@ -186,16 +178,12 @@ contract PredictionMarketTest is Test {
             salt: bytes32(uint256(444))
         });
 
-        PredictionMarket.SignedOrder memory taker = PredictionMarket.SignedOrder({
-            order: userBuy,
-            signature: _signOrder(USER_PK, userBuy)
-        });
+        PredictionMarket.SignedOrder memory taker =
+            PredictionMarket.SignedOrder({order: userBuy, signature: _signOrder(USER_PK, userBuy)});
 
         PredictionMarket.SignedOrder[] memory makers = new PredictionMarket.SignedOrder[](1);
-        makers[0] = PredictionMarket.SignedOrder({
-            order: treasurySell,
-            signature: _signOrder(TREASURY_PK, treasurySell)
-        });
+        makers[0] =
+            PredictionMarket.SignedOrder({order: treasurySell, signature: _signOrder(TREASURY_PK, treasurySell)});
 
         uint128[] memory makerFills = new uint128[](1);
         makerFills[0] = uint128(1 ether);
@@ -278,11 +266,7 @@ contract PredictionMarketTest is Test {
         vm.stopPrank();
     }
 
-    function _signOrder(uint256 privateKey, PredictionMarket.Order memory order)
-        internal
-        view
-        returns (bytes memory)
-    {
+    function _signOrder(uint256 privateKey, PredictionMarket.Order memory order) internal view returns (bytes memory) {
         bytes32 digest = market.hashOrder(order);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
         return abi.encodePacked(r, s, v);
